@@ -1,0 +1,56 @@
+plugins {
+    id "java-library"
+    id "maven-publish"
+}
+
+group = 'com.hishidama.embulk'
+version = '0.1.0'
+
+sourceCompatibility = 8
+targetCompatibility = 8
+compileJava.options.encoding = 'UTF-8'
+
+java {
+    withSourcesJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly "org.embulk:embulk-api:0.10.41"
+    compileOnly "org.embulk:embulk-spi:0.10.41"
+    compileOnly "org.embulk:embulk-core:0.10.41"
+    implementation "org.embulk:embulk-deps:0.10.41"
+    // https://mvnrepository.com/artifact/org.embulk/embulk-parser-csv
+    implementation 'org.embulk:embulk-parser-csv:0.10.36'
+
+    testImplementation "org.embulk:embulk-core:0.10.41"
+    testImplementation 'junit:junit:4.+'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = 'hm-embulk-tester'
+            from components.java
+
+            pom {
+                name = 'hm-embulk-tester'
+                description = 'Tool to test Embulk plugin'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'hishidama'
+                    }
+                }
+            }
+        }
+    }
+}
