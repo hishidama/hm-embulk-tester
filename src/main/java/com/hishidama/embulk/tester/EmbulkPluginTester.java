@@ -18,6 +18,7 @@ import org.embulk.EmbulkEmbed;
 import org.embulk.EmbulkEmbed.Bootstrap;
 import org.embulk.config.ConfigLoader;
 import org.embulk.config.ConfigSource;
+import org.embulk.input.file.LocalFileInputPlugin;
 import org.embulk.parser.csv.CsvParserPlugin;
 import org.embulk.spi.DecoderPlugin;
 import org.embulk.spi.EncoderPlugin;
@@ -137,6 +138,7 @@ public class EmbulkPluginTester implements Closeable {
 	}
 
 	protected void addDefaultPlugin() {
+		addFileInputPlugin("file", LocalFileInputPlugin.class);
 		addFileInputPlugin(EmbulkTestFileInputPlugin.TYPE, EmbulkTestFileInputPlugin.class);
 		addParserPlugin("csv", CsvParserPlugin.class);
 		addOutputPlugin(EmbulkTestOutputPlugin.TYPE, EmbulkTestOutputPlugin.class);

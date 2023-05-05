@@ -25,6 +25,7 @@ dependencies {
     implementation "org.embulk:embulk-deps:0.10.41"
     // https://mvnrepository.com/artifact/org.embulk/embulk-parser-csv
     implementation 'org.embulk:embulk-parser-csv:0.10.36'
+    implementation "org.embulk:embulk-input-file:0.10.42"
 
     testImplementation "org.embulk:embulk-core:0.10.41"
     testImplementation 'junit:junit:4.+'
