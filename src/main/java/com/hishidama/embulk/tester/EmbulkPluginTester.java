@@ -18,6 +18,7 @@ import org.embulk.EmbulkEmbed;
 import org.embulk.EmbulkEmbed.Bootstrap;
 import org.embulk.config.ConfigLoader;
 import org.embulk.config.ConfigSource;
+import org.embulk.formatter.csv.CsvFormatterPlugin;
 import org.embulk.input.file.LocalFileInputPlugin;
 import org.embulk.parser.csv.CsvParserPlugin;
 import org.embulk.spi.DecoderPlugin;
@@ -93,6 +94,14 @@ public class EmbulkPluginTester implements Closeable {
         addPlugin(OutputPlugin.class, name, impl);
     }
 
+    public void addFileOutputPlugin(String name, Class<? extends FileOutputPlugin> impl) {
+        addPlugin(FileOutputPlugin.class, name, impl);
+    }
+
+    public void addFormatterPlugin(String name, Class<? extends FormatterPlugin> impl) {
+        addPlugin(FormatterPlugin.class, name, impl);
+    }
+
     public void setInputTaskSize(int taskSize) {
         this.inputTaskSize = taskSize;
     }
@@ -145,6 +154,8 @@ public class EmbulkPluginTester implements Closeable {
         addFileInputPlugin(EmbulkTestFileInputPlugin.TYPE, EmbulkTestFileInputPlugin.class);
         addParserPlugin("csv", CsvParserPlugin.class);
         addOutputPlugin(EmbulkTestOutputPlugin.TYPE, EmbulkTestOutputPlugin.class);
+        addOutputPlugin(EmbulkTestOutputBinaryPlugin.TYPE, EmbulkTestOutputBinaryPlugin.class);
+        addFormatterPlugin("csv", CsvFormatterPlugin.class);
     }
 
     public synchronized ConfigLoader getConfigLoader() {
@@ -192,12 +203,16 @@ public class EmbulkPluginTester implements Closeable {
     }
 
     public List<OutputRecord> runParser(List<String> inList, EmbulkTestParserConfig parser) {
+        ConfigSource in = newConfigSourceTestFileInput(inList, parser);
+        return runInput(in);
+    }
+
+    protected ConfigSource newConfigSourceTestFileInput(List<String> inList, EmbulkTestParserConfig parser) {
         ConfigSource in = newConfigSource(EmbulkTestFileInputPlugin.TYPE);
         in.set("textList", inList);
         in.set("taskSize", this.inputTaskSize);
         in.set("parser", parser);
-
-        return runInput(in);
+        return in;
     }
 
     public List<OutputRecord> runInput(ConfigSource in) {
@@ -209,12 +224,22 @@ public class EmbulkPluginTester implements Closeable {
     }
 
     public void runOutput(List<String> inList, EmbulkTestParserConfig parser, ConfigSource out) {
-        ConfigSource in = newConfigSource(EmbulkTestFileInputPlugin.TYPE);
-        in.set("textList", inList);
-        in.set("taskSize", this.inputTaskSize);
-        in.set("parser", parser);
-
+        ConfigSource in = newConfigSourceTestFileInput(inList, parser);
         run(in, out);
+    }
+
+    public byte[] runFormatterToBinary(List<String> inList, EmbulkTestParserConfig parser, ConfigSource formatter) {
+        ConfigSource in = newConfigSourceTestFileInput(inList, parser);
+        return runFormatterToBinary(in, formatter);
+    }
+
+    public byte[] runFormatterToBinary(ConfigSource in, ConfigSource formatter) {
+        ConfigSource out = newConfigSource(EmbulkTestOutputBinaryPlugin.TYPE);
+        out.set("formatter", formatter);
+
+        EmbulkTestOutputBinaryPlugin.clearResult();
+        run(in, out);
+        return EmbulkTestOutputBinaryPlugin.getResult();
     }
 
     public void run(ConfigSource in, ConfigSource out) {
