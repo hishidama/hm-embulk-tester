@@ -71,8 +71,19 @@ public class EmbulkPluginTesterTest {
     }
 
     @Test
-    public void runFormatterToBinary() throws IOException {
+    public void runFormatterToBinary1() throws IOException {
+        runFormatterToBinary(1);
+    }
+
+    @Test
+    public void runFormatterToBinary4() throws IOException {
+        runFormatterToBinary(4);
+    }
+
+    private void runFormatterToBinary(int outputMinTaskSize) throws IOException {
         try (EmbulkPluginTester tester = new EmbulkPluginTester()) {
+            tester.setOutputMinTaskSize(outputMinTaskSize);
+
             EmbulkTestParserConfig parser = tester.newParserConfig("csv");
             parser.addColumn("id", "long");
             parser.addColumn("text", "string");
@@ -82,19 +93,28 @@ public class EmbulkPluginTesterTest {
             formatter.set("delimiter", "\t");
 
             List<String> inList = Arrays.asList("11,abc", "22,def");
-            byte[] result = tester.runFormatterToBinary(inList, parser, formatter);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(result), StandardCharsets.UTF_8))) {
-                {
+            List<byte[]> resultList = tester.runFormatterToBinary(inList, parser, formatter);
+            assertEquals(outputMinTaskSize, resultList.size());
+            int emptyCount = 0;
+            for (byte[] result : resultList) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(result), StandardCharsets.UTF_8))) {
+                    {
+                        String line = reader.readLine();
+                        if (line == null) {
+                            emptyCount++;
+                            continue;
+                        }
+                        assertEquals("11\tabc", line);
+                    }
+                    {
+                        String line = reader.readLine();
+                        assertEquals("22\tdef", line);
+                    }
                     String line = reader.readLine();
-                    assertEquals("11\tabc", line);
+                    assertNull(line);
                 }
-                {
-                    String line = reader.readLine();
-                    assertEquals("22\tdef", line);
-                }
-                String line = reader.readLine();
-                assertNull(line);
             }
+            assertEquals(outputMinTaskSize - 1, emptyCount);
         }
     }
 }

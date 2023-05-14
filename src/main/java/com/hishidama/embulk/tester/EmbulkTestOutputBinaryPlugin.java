@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
@@ -38,7 +39,7 @@ public class EmbulkTestOutputBinaryPlugin implements OutputPlugin {
     /**
      * TODO staticフィールドを使わずに{@link EmbulkPluginTester#runFormatterToBinary(List, EmbulkTestParserConfig, ConfigSource)}に渡したい
      */
-    private static ByteArrayOutputStream bos;
+    private static List<byte[]> resultList;
 
     protected static final ConfigMapperFactory CONFIG_MAPPER_FACTORY = ConfigMapperFactory.builder().addDefaultModules().addModule(ZoneIdModule.withLegacyNames()).build();
 
@@ -71,16 +72,16 @@ public class EmbulkTestOutputBinaryPlugin implements OutputPlugin {
     }
 
     public static void clearResult() {
-        bos = new ByteArrayOutputStream(1024);
+        resultList = new CopyOnWriteArrayList<>();
     }
 
-    public static byte[] getResult() {
+    public static List<byte[]> getResult() {
         checkResult();
-        return bos.toByteArray();
+        return resultList;
     }
 
     private static void checkResult() {
-        if (bos == null) {
+        if (resultList == null) {
             throw new IllegalStateException("call EmbulkTestOutputBinaryPlugin.clearResult()");
         }
     }
@@ -168,9 +169,7 @@ public class EmbulkTestOutputBinaryPlugin implements OutputPlugin {
             public void finish() throws IOException {
                 checkResult();
                 byte[] result = buffer.toByteArray();
-                synchronized (bos) {
-                    bos.write(result);
-                }
+                resultList.add(result);
             }
 
             @Override

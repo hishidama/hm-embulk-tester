@@ -59,6 +59,7 @@ public class EmbulkPluginTester implements Closeable {
     private EmbulkEmbed embulk;
     private ConfigLoader configLoader;
     private int inputTaskSize = 1;
+    private int outputMinTaskSize = 4;
 
     public EmbulkPluginTester() {
     }
@@ -104,6 +105,10 @@ public class EmbulkPluginTester implements Closeable {
 
     public void setInputTaskSize(int taskSize) {
         this.inputTaskSize = taskSize;
+    }
+
+    public void setOutputMinTaskSize(int taskSize) {
+        this.outputMinTaskSize = taskSize;
     }
 
     protected synchronized EmbulkEmbed getEmbulkEmbed() {
@@ -228,12 +233,12 @@ public class EmbulkPluginTester implements Closeable {
         run(in, out);
     }
 
-    public byte[] runFormatterToBinary(List<String> inList, EmbulkTestParserConfig parser, ConfigSource formatter) {
+    public List<byte[]> runFormatterToBinary(List<String> inList, EmbulkTestParserConfig parser, ConfigSource formatter) {
         ConfigSource in = newConfigSourceTestFileInput(inList, parser);
         return runFormatterToBinary(in, formatter);
     }
 
-    public byte[] runFormatterToBinary(ConfigSource in, ConfigSource formatter) {
+    public List<byte[]> runFormatterToBinary(ConfigSource in, ConfigSource formatter) {
         ConfigSource out = newConfigSource(EmbulkTestOutputBinaryPlugin.TYPE);
         out.set("formatter", formatter);
 
@@ -250,6 +255,11 @@ public class EmbulkPluginTester implements Closeable {
     }
 
     public void run(ConfigSource config) {
+        // https://github.com/embulk/embulk/blob/master/embulk-core/src/main/java/org/embulk/exec/LocalExecutorPlugin.java
+        ConfigSource exec = newConfigSource();
+        exec.set("min_output_tasks", this.outputMinTaskSize);
+        config.set("exec", exec);
+
         getEmbulkEmbed().run(config);
     }
 
