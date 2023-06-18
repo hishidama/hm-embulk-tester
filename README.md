@@ -8,6 +8,44 @@ Tool to test Embulk plugin
 
 ## usage
 
+### ParserPlugin test
+
+```java
+import com.hishidama.embulk.tester.EmbulkPluginTester;
+import com.hishidama.embulk.tester.EmbulkTestOutputPlugin.OutputRecord;
+import com.hishidama.embulk.tester.EmbulkTestParserConfig;
+
+@Test
+public void test() {
+    try (EmbulkPluginTester tester = new EmbulkPluginTester()) {
+        // register test target plugin class
+        tester.addParserPlugin("example1", Example1ParserPlugin.class);
+
+        EmbulkTestParserConfig parser = tester.newParserConfig("example1"); // set test target plugin type
+        parser.set("example1-option", "test");
+        parser.addColumn("c1", "long");
+        parser.addColumn("c2", "double");
+        parser.addColumn("c3", "string");
+        parser.addColumn("c4", "timestamp").set("format", "%Y/%m/%d");
+        ... // set other option
+
+        URL inFile = getClass().getResource("testFile.txt");
+        List<OutputRecord> outputList = tester.runParser(inFile, parser);
+
+        assertEquals(7, outputList.size());
+        int i = 0;
+        {
+            OutputRecord record = outputList.get(i++);
+            assertEquals(1L, record.getAsLong("c1"));
+            assertEquals(2d, record.getAsDouble("c2"));
+            assertEquals("3", record.getAsString("c3"));
+            assertEquals(ZonedDateTime.parse("2023-06-19T10:15:30+09:00[Asia/Tokyo]").toInstant(), record.getAsTimestamp("c4"));
+        }
+        ...
+    }
+}
+```
+
 ### OutputPlugin test
 
 ```java
@@ -17,7 +55,7 @@ import com.hishidama.embulk.tester.EmbulkPluginTester;
 public void test() {
     // Java11
     try (var tester = new EmbulkPluginTester()) {
-        // register target plugin class
+        // register test target plugin class
         tester.addOutputPlugin("example1", Example1OutputPlugin.class);
 
         var inputList = List.of( // csv - column c1,c2
@@ -30,12 +68,12 @@ public void test() {
         parser.addColumn("c2", "long");   // column c2
 
         var out = tester.newConfigSource();
-        out.set("type", "example1"); // set target plugin type
+        out.set("type", "example1"); // set test target plugin type
         ... // set other option
 
         tester.runOutput(inputList, parser, out);
 
-        ... // assert
+        ... // assert output of Example1OutputPlugin
     }
 }
 ```
