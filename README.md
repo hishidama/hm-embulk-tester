@@ -3,7 +3,7 @@ Tool to test Embulk plugin
 
 ## required
 
-* Embulk 0.10
+* Embulk 0.10 or later
 * Java8 or later
 
 ## usage
@@ -60,7 +60,7 @@ repositories {
 dependencies {
     ...
     testCompile "org.embulk:embulk-junit4:0.10.41"
-    testCompile "com.hishidama.embulk:hm-embulk-tester:0.1.+" // ★
+    testCompile "io.github.hishidama.embulk:hm-embulk-tester:0.1.+" // ★
     // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
     testCompile 'javax.xml.bind:jaxb-api:2.3.1' // for Java11
 }

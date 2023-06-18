@@ -3,7 +3,7 @@ plugins {
     id "maven-publish"
 }
 
-group = 'com.hishidama.embulk'
+group = 'io.github.hishidama.embulk'
 version = '0.1.0'
 
 sourceCompatibility = 8
