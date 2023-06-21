@@ -1,6 +1,7 @@
 plugins {
     id "java-library"
     id "maven-publish"
+    id "signing"
 }
 
 group = 'io.github.hishidama.embulk'
@@ -11,7 +12,13 @@ targetCompatibility = 8
 compileJava.options.encoding = 'UTF-8'
 
 java {
+    withJavadocJar()
     withSourcesJar()
+}
+
+javadoc {
+    options.charSet = 'UTF-8'
+    options.encoding = 'UTF-8'
 }
 
 repositories {
@@ -34,13 +41,14 @@ dependencies {
 
 publishing {
     publications {
-        maven(MavenPublication) {
+        mavenJava(MavenPublication) {
             artifactId = 'hm-embulk-tester'
             from components.java
 
             pom {
                 name = 'hm-embulk-tester'
                 description = 'Tool to test Embulk plugin'
+                url = 'https://github.com/hishidama/hm-embulk-tester'
                 licenses {
                     license {
                         name = 'The Apache License, Version 2.0'
@@ -50,9 +58,28 @@ publishing {
                 developers {
                     developer {
                         id = 'hishidama'
+                        name = 'Hishida Masato'
                     }
+                }
+                scm {
+                    connection = 'git@github.com:hishidama/hm-embulk-tester.git'
+                    developerConnection = 'git@github.com:hishidama/hm-embulk-tester.git'
+                    url = 'https://github.com/hishidama/hm-embulk-tester'
                 }
             }
         }
     }
+    repositories {
+        maven {
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = "${sonatypeUsername}"
+                password = "${sonatypePassword}"
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }

@@ -8,6 +8,20 @@ Tool to test Embulk plugin
 
 ## usage
 
+### build.gradle(Gradle6)
+
+```gradle
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    ...
+    testCompile "org.embulk:embulk-junit4:0.10.41"
+    testCompile "io.github.hishidama.embulk:hm-embulk-tester:0.1.+" // ★
+}
+```
+
 ### ParserPlugin test
 
 ```java
@@ -84,24 +98,6 @@ public void test() {
 $ export JAVA_HOME=.../jdk1.8
 $ cd .../hm-embulk-tester
 $ ./gradlew publishToMavenLocal
-```
-
-### build.gradle(Gradle6) for test target
-
-```gradle
-repositories {
-    mavenLocal() // ★
-    mavenCentral()
-}
-
-
-dependencies {
-    ...
-    testCompile "org.embulk:embulk-junit4:0.10.41"
-    testCompile "io.github.hishidama.embulk:hm-embulk-tester:0.1.+" // ★
-    // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
-    testCompile 'javax.xml.bind:jaxb-api:2.3.1' // for Java11 Embulk v0.10
-}
 ```
 
 ## import into Eclipse
